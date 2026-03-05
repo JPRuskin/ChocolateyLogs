@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Configuration>
+    <SelectionSets>
+        <SelectionSet>
+            <Name>ChocolateyLogTypes</Name>
+            <Types>
+                <TypeName>ChocolateyLog</TypeName>
+                <TypeName>ChocolateyCall</TypeName>
+            </Types>
+        </SelectionSet>
+    </SelectionSets>
+    <!-- ################ CONTROL DEFINITIONS ################ -->
+    <Controls>
+        <Control>
+            <Name>ChocolateyLog-GroupingFormat</Name>
+            <CustomControl>
+                <CustomEntries>
+                    <CustomEntry>
+                        <CustomItem>
+                            <Frame>
+                                <LeftIndent>4</LeftIndent>
+                                <CustomItem>
+                                    <Text>ProcessID: </Text>
+                                    <ExpressionBinding>
+                                        <ScriptBlock>
+                                            $_.ProcessID
+                                        </ScriptBlock>
+                                    </ExpressionBinding>
+                                    <NewLine/>
+                                    <Text>Duration:</Text>
+                                    <ExpressionBinding>
+                                        <ScriptBlock>
+                                            "?"
+                                        </ScriptBlock>
+                                    </ExpressionBinding>
+                                    <NewLine/>
+                                </CustomItem>
+                            </Frame>
+                        </CustomItem>
+                    </CustomEntry>
+                </CustomEntries>
+            </CustomControl>
+        </Control>
+    </Controls>
+    <ViewDefinitions>
+        <View>
+            <Name>ChocolateyCalls</Name>
+            <ViewSelectedBy>
+                <TypeName>ChocolateyCall</TypeName>
+            </ViewSelectedBy>
+            <TableControl>
+                <TableHeaders>
+                    <TableColumnHeader>
+                        <Label>StartTime</Label>
+                        <Width>19</Width>
+                        <!--Alignment>Left</Alignment-->
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>Exit</Label>
+                        <Width>5</Width>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>Command</Label>
+                        <!--Width>11</Width-->
+                        <!--Alignment>Left</Alignment-->
+                    </TableColumnHeader>
+                </TableHeaders>
+                <TableRowEntries>
+                    <TableRowEntry>
+                        <TableColumnItems>
+                            <TableColumnItem>
+                                <PropertyName>StartTime</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Result</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <ScriptBlock>
+                                    $_.Command.Replace("""$($env:ChocolateyInstall)\choco.exe""",'choco')
+                                </ScriptBlock>
+                            </TableColumnItem>
+                        </TableColumnItems>
+                    </TableRowEntry>
+                </TableRowEntries>
+            </TableControl>
+        </View>
+        <View>
+            <Name>ChocolateyLogs</Name>
+            <ViewSelectedBy>
+                <TypeName>ChocolateyLog</TypeName>
+            </ViewSelectedBy>
+            <GroupBy>
+                <PropertyName>ProcessId</PropertyName>
+                <CustomControlName>ChocolateyLog-GroupingFormat</CustomControlName>
+            </GroupBy>
+            <TableControl>
+                <TableHeaders>
+                    <TableColumnHeader>
+                        <Label>Timestamp</Label>
+                        <Width>19</Width>
+                        <Alignment>Left</Alignment>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>Message</Label>
+                    </TableColumnHeader>
+                </TableHeaders>
+                <TableRowEntries>
+                    <TableRowEntry>
+                        <TableColumnItems>
+                            <TableColumnItem>
+                                <PropertyName>Timestamp</PropertyName>
+                                <Alignment>Left</Alignment>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <!--PropertyName>Message</PropertyName-->
+                                <ScriptBlock>
+                                    $M = $_
+                                    $Colour = switch ($_.Stream) {
+                                        #"INFO"  {0}  # Default
+                                        "DEBUG" {35}  # Magenta
+                                        "WARN"  {93}  # Bright Yellow
+                                        "ERROR" {91}  # Bright Red
+                                        #"NUGET"   {90}  # Bright Black (Gray)
+                                        #"VERBOSE" {90}  # Bright Black (Gray)
+                                        default {
+                                            if ($M.Message -match '^(VERBOSE:|\[NuGet\])') {
+                                                90  # Bright Black (Gray)
+                                            } else {
+                                                0  # Default
+                                            }
+                                        }
+                                    }
+                                    $SetColour = "$([char]27)[$($Colour)m"
+                                    $Reset = "$([char]27)[0m"
+
+                                    "$SetColour$($_.Message)$Reset"
+                                </ScriptBlock>
+                            </TableColumnItem>
+                        </TableColumnItems>
+                    </TableRowEntry>
+                </TableRowEntries>
+            </TableControl>
+        </View>
+    </ViewDefinitions>
+</Configuration>
