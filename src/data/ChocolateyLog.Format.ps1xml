@@ -27,10 +27,17 @@
                                         </ScriptBlock>
                                     </ExpressionBinding>
                                     <NewLine/>
-                                    <Text>Duration:</Text>
+                                    <!--Text>Duration:</Text>
                                     <ExpressionBinding>
                                         <ScriptBlock>
-                                            "?"
+                                            ""
+                                        </ScriptBlock>
+                                    </ExpressionBinding>
+                                    <NewLine/-->
+                                    <Text>Command:</Text>
+                                    <ExpressionBinding>
+                                        <ScriptBlock>
+                                            $_.Command.Replace("""$($env:ChocolateyInstall)\choco.exe""",'choco')
                                         </ScriptBlock>
                                     </ExpressionBinding>
                                     <NewLine/>
@@ -73,6 +80,17 @@
                             </TableColumnItem>
                             <TableColumnItem>
                                 <PropertyName>Result</PropertyName>
+                                <!--ScriptBlock>
+                                    $Colour = switch ($_.Result) {
+                                        0        {0}  # Default
+                                        "E"     {91}  # Bright Red
+                                        default {93}  # Bright Yellow
+                                    }
+                                    $SetColour = "$([char]27)[$($Colour)m"
+                                    $Reset = "$([char]27)[0m"
+
+                                    "$SetColour$($_.Result)$Reset"
+                                </ScriptBlock-->
                             </TableColumnItem>
                             <TableColumnItem>
                                 <ScriptBlock>
