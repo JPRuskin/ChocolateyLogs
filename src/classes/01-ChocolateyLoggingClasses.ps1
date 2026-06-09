@@ -44,7 +44,7 @@ class ChocolateyLog {
     ChocolateyLog ([string]$Line) {
         $this.Line = $Line
 
-        if ($this.Line -match $(-join @(
+        if ($this.Line -match $(-join @(  # Could use the multiline, if we wanted to strip out and actual multiline bits...
             "^"
             "(?<Timestamp>\d{4}-\d{2}-\d{2}\W+\d{2}:\d{2}:\d{2},\d{3})\W+"
             "(?<ProcessID>\d+)\W+"
@@ -76,21 +76,25 @@ class ChocolateyCall {
 
         $Configuration = [ordered]@{}
 
-        $StringConfiguration = $this.Output.Where{$_.Stream -eq 'Debug' -and $_.Message.StartsWith('Configuration: ')}.Message
-        $StringConfiguration.TrimStart("Configuration: ").Split("|").Where{-not [string]::IsNullOrWhiteSpace($_)}.Trim().ForEach{
-            if ($_ -match "(?<Key>.+)='(?<Value>.+)'") {
-                $Level = '$Configuration'
-                foreach ($Segment in $Matches.Key.Split('.')) {
-                    $Level += ".$Segment"
-                    if (-not $(Invoke-Expression $Level)) {
-                        Invoke-Expression "$Level = @{}"
+        if ($StringConfiguration = $this.Output.Where{$_.Stream -eq 'Debug' -and $_.Message.StartsWith('Configuration: ')}.Message) {
+            $StringConfiguration.TrimStart("Configuration: ").Split("|").Where{-not [string]::IsNullOrWhiteSpace($_)}.Trim().ForEach{
+                if ($_ -match "(?<Key>.+)='(?<Value>.+)'") {
+                    $Level = '$Configuration'
+                    foreach ($Segment in $Matches.Key.Split('.')) {
+                        $Level += ".$Segment"
+                        if (-not $(Invoke-Expression $Level)) {
+                            Invoke-Expression "$Level = @{}"
+                        }
                     }
+                    Invoke-Expression "$Level = '$($Matches.Value.Trim(' ''"'))'"
                 }
-                Invoke-Expression "$Level = '$($Matches.Value)'"
             }
+
+            $this.configValues = $Configuration
+        } else {
+            Write-Debug "No Configuration Found on Log Stamped at $($this.StartTime)"
         }
 
-        $this.configValues = $Configuration
         return $this.configValues
     }
 }
