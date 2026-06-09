@@ -34,12 +34,12 @@
                                         </ScriptBlock>
                                     </ExpressionBinding>
                                     <NewLine/-->
-                                    <Text>Command:</Text>
+                                    <!-- <Text>Command:</Text>
                                     <ExpressionBinding>
                                         <ScriptBlock>
                                             $_.Command.Replace("""$($env:ChocolateyInstall)\choco.exe""",'choco')
                                         </ScriptBlock>
-                                    </ExpressionBinding>
+                                    </ExpressionBinding> -->
                                     <NewLine/>
                                 </CustomItem>
                             </Frame>
