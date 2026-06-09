@@ -1,23 +1,40 @@
 function Get-ChocolateyLog {
+    <#
+        .Synopsis
+            Returns formatted ChocolateyLog objects from the specified log(s).
+
+        .Description
+            Returns ChocolateyLog objects from any specifed logs. These should output
+            in a more readable format, though some entries that have multiple lines
+            (or longer lines) may not be readable without looking at the object or
+            opening the log.
+
+        .Example
+            Get-ChocolateyLog
+
+            # Returns the current Chocolatey log.
+
+        .Example
+            Get-ChocolateyLog -Path ~\Downloads\chocolatey(13).log
+
+            # Returns the content of the provided Chocolatey log.
+
+        .Example
+            Get-ChocolateyLog C:\ProgramData\chocolatey\logs\chocolatey-agent.log | Sort ProcessId, Timestamp
+
+            # Returns the contents of the Agent log, sorted by thread (as they are quite long running).
+
+    #>
+    [OutputType([ChocolateyLog[]])]
     [CmdletBinding()]
     param(
+        # The path of the log(s) to parse.
         [Parameter(ValueFromPipeline)]
+        [ArgumentCompleter({(Get-ChildItem $env:ChocolateyInstall\logs\ -Filter *.log).FullName})]
         [string[]]$Path = (Join-Path $env:ChocolateyInstall "logs\chocolatey.log")
     )
-    begin {
-        $MultilinePattern = -join @(
-            "(?m)"  # Multiline
-            "^"  # We want to match from the start of a log line
-            "(?<Timestamp>\d{4}-\d{2}-\d{2}\W+\d{2}:\d{2}:\d{2},\d{3})\W+"  # There should be a timestamp, in a known format
-            "(?<ProcessID>\d+)\W+"  # Then a string of digits (processId)
-            "\[(?<Stream>INFO|DEBUG|WARN|ERROR) ?\]"  # Then whichever stream the command was on
-            " - "  # a separator
-            "(?<Message>(?:.|\n)*?)\n"  # and then a message that can span multiple lines
-            "(?=^\d{4}-\d{2}-\d{2}\W+\d{2}:\d{2}:\d{2},\d{3}\W+\d+\W+\[|\Z)"  # Finally, we should see the next log, or the end of the file
-        )
-    }
     process {
         # We use Get-Content -Raw instead of Select-String -Path to be able to match multiline
-        [ChocolateyLog[]](Get-Content -Path $Path -Raw | Select-String -Pattern $MultilinePattern -AllMatches).Matches
+        Get-Content -Path $Path -Raw | ConvertTo-ChocolateyLog
     }
 }
