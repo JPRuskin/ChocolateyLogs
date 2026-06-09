@@ -50,13 +50,30 @@ function Get-ChocolateyCall {
     }
     process {
         Resolve-Path $Path | Get-ChocolateyLog | Group-Object ProcessID | ForEach-Object {
-            [ChocolateyCall]@{
+            $Call = [ChocolateyCall]@{
                 StartTime = $_.Group[0].Timestamp
                 ProcessID = $_.Name
                 Command   = $_.Group.Message.Where({$_ -like "Command line*"}, 1) -replace "^Command line: (""$([regex]::Escape($env:ChocolateyInstall)))?\\(choco)(\.exe"")?",'$2'
                 Output    = $_.Group
                 Result    = if ($_.Group.Message[-1] -match "^Exiting with \d+$") {$_.Group.Message[-1] -replace "^Exiting with "} else {"E"}
             }
+
+            if ($Call.Command -eq 'Command line not shown - sensitive arguments may have been passed.') {
+                try {
+                    $null = $C.GetConfiguration()
+                } catch {
+                    <# Likely malformed call, e.g. early termination #>
+                    $Call.Command = "NOT CAPTURED (Possible early termination)"
+                }
+
+                if ($Call.GetConfiguration()) {
+                    $Call.Command = "choco $($Call.GetConfiguration().CommandName) $($Call.GetConfiguration().Input) [PARAMETERS REDACTED]"
+                }
+            } elseif ($Call.Command -eq '' -and $Call.Output[-2].Message -as [Version]) {
+                $Call.Command = "choco --version"
+            }
+
+            $Call
         } | Sort-Object StartTime | Select-Object @SelectLast
     }
 }
