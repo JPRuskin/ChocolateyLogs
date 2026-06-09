@@ -74,16 +74,19 @@ class ChocolateyCall {
     [hashtable] GetConfiguration () {
         if ($this.configValues) {return $this.configValues}
 
-        $Configuration = @{}
+        $Configuration = [ordered]@{}
 
         $StringConfiguration = $this.Output.Where{$_.Stream -eq 'Debug' -and $_.Message.StartsWith('Configuration: ')}.Message
         $StringConfiguration.TrimStart("Configuration: ").Split("|").Where{-not [string]::IsNullOrWhiteSpace($_)}.Trim().ForEach{
             if ($_ -match "(?<Key>.+)='(?<Value>.+)'") {
-
+                $Level = '$Configuration'
                 foreach ($Segment in $Matches.Key.Split('.')) {
-
+                    $Level += ".$Segment"
+                    if (-not $(Invoke-Expression $Level)) {
+                        Invoke-Expression "$Level = @{}"
+                    }
                 }
-                $Configuration[$Matches.Key] = $Matches.Value
+                Invoke-Expression "$Level = '$($Matches.Value)'"
             }
         }
 
