@@ -16,7 +16,7 @@ Alternatively, install it from the PowerShell Gallery.
 Get-ChocolateyCall [[-Path] <string[]>] [[-Last] <ushort>] [<CommonParameters>]
 ```
 
-<img width="958" height="419" alt="image" src="https://gist.github.com/user-attachments/assets/65bc6f10-7457-48c5-8cc6-89e5524963c6" />
+![A terminal showing Get-ChocolateyCall being used]("https://gist.github.com/user-attachments/assets/65bc6f10-7457-48c5-8cc6-89e5524963c6")
 
 This should produce a list of commands that you have run, along with their start time and exit code. `E` represents a command that threw an exception, was killed mid-task, or is otherwise incomplete.
 
