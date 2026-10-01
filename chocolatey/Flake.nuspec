@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Do not remove this test for UTF-8: if “Ω” doesn’t appear as greek uppercase omega letter
+enclosed in quotation marks, you should use an editor that supports UTF-8, not this one. -->
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>flake.powershell</id>
+    <version>$version$</version>
+    <owners>jpruskin</owners>
+    <title>Flake (a module for viewing Chocolatey logs)</title>
+    <authors>jpruskin</authors>
+    <projectUrl>https://github.com/jpruskin/ChocolateyLogs</projectUrl>
+    <licenseUrl>https://github.com/jpruskin/ChocolateyLogs/blob/main/LICENSE.md</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectSourceUrl>https://github.com/jpruskin/ChocolateyLogs/</projectSourceUrl>
+    <packageSourceUrl>https://github.com/jpruskin/ChocolateyLogs/tree/main/chocolatey</packageSourceUrl>
+    <bugTrackerUrl>https://github.com/jpruskin/ChocolateyLogs/issues</bugTrackerUrl>
+    <tags>chocolatey logs parsing powershell module</tags>
+    <summary>A PowerShell module written to parse Chocolatey logs.</summary>
+    <releaseNotes>https://github.com/JPRuskin/ChocolateyLogs/releases</releaseNotes>
+    <description><![CDATA[
+Flake is a module for parsing, viewing (with colourisation) and handling logs from Chocolatey products.
+
+## Usage
+
+### Get-ChocolateyCall
+
+```
+Get-ChocolateyCall [[-Path] <string[]>] [[-Last] <ushort>] [<CommonParameters>]
+```
+
+<img width="958" height="419" alt="image" src="https://gist.github.com/user-attachments/assets/65bc6f10-7457-48c5-8cc6-89e5524963c6" />
+
+This should produce a list of commands that you have run, along with their start time and exit code. `E` represents a command that threw an exception, was killed mid-task, or is otherwise incomplete.
+
+- You can see all configuration at the time of a given command by using the `GetConfiguration()` method.
+- You can see all packages installed at the time of a given command by using the `GetPackages()` method.
+- You can see a hashtable of the scripts that were run by a given call by using the `GetScripts()` method.
+- You can access the full log for a given call by expanding `Output`.
+
+### Get-ChocolateyLog
+
+```
+Get-ChocolateyLog [[-Path] <string[]>] [[-Last] <ushort>] [<CommonParameters>]
+```
+
+This somewhat colourised, trimmed down, output can also be displayed by using `Get-ChocolateyLog`. This will output everything in your log in a slightly formatted way. The main differences are that multi-line logs only show up as one line (so you don't see all of the settings unless you dig into them), and it only displays a formatted timestamp and a colourised message by default.
+
+<img width="1453" height="705" alt="image" src="https://gist.github.com/user-attachments/assets/1f75575f-702c-49cf-8b5e-3116e9573131" />
+
+Debug is in purple, errors are in red, warnings are in yellow, and info (stdout) is in white. NuGet and Verbose lines are coloured in gray, because they are infrequently helpful but take up a lot of space. You can filter against the stream property as follows:
+
+```
+Get-ChocolateyLog | Where Stream -eq 'Error'
+```
+
+### Show-ChocolateyLogTail
+
+```
+Show-ChocolateyLogTail [[-Path] <string>] [[-Last] <ushort>] [<CommonParameters>]
+```
+
+This function simply tails the specified log and streams formatted ChocolateyLog objects until cancelled with Ctrl+C.
+
+If `-Last` is specified, it starts by showing the last _X_ log entries.
+    ]]></description>
+      <dependencies>
+      </dependencies>
+    </metadata>
+    <files>
+      <file src="*.ps1" target="tools" />
+      <file src="..\$version$\**" target="tools\module" />
+    </files>
+</package>
