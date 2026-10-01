@@ -45,8 +45,8 @@ function Get-ChocolateyCall {
         [uint16]$Last
     )
     begin {
-        $SelectLast = @{}
-        if ($Last) {$SelectLast.Last = $Last}
+        $Selection = @{}
+        if ($Last) {$Selection.Last = $Last}
     }
     process {
         Resolve-Path $Path | Get-ChocolateyLog | Group-Object ProcessID | ForEach-Object {
@@ -74,6 +74,6 @@ function Get-ChocolateyCall {
             }
 
             $Call
-        } | Sort-Object StartTime | Select-Object @SelectLast
+        } | Sort-Object StartTime | Select-Object @Selection
     }
 }

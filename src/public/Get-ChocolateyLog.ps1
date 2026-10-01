@@ -31,10 +31,19 @@ function Get-ChocolateyLog {
         # The path of the log(s) to parse.
         [Parameter(ValueFromPipeline)]
         [ArgumentCompleter({(Get-ChildItem $env:ChocolateyInstall\logs\ -Filter *.log).FullName})]
-        [string[]]$Path = (Join-Path $env:ChocolateyInstall "logs\chocolatey.log")
+        [string[]]$Path = (Join-Path $env:ChocolateyInstall "logs\chocolatey.log"),
+
+        # If provided, outputs only the last X lines
+        [uint16]$Last
     )
+    begin {
+        $Selection = @{}
+        if ($Last) {
+            $Selection.Last = $Last
+        }
+    }
     process {
         # We use Get-Content -Raw instead of Select-String -Path to be able to match multiline
-        Get-Content -Path $Path -Raw | ConvertTo-ChocolateyLog
+        Get-Content -Path $Path -Raw | ConvertTo-ChocolateyLog | Select-Object @Selection
     }
 }
