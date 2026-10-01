@@ -117,4 +117,22 @@ class ChocolateyCall {
             [PSCustomObject]@{Id = $Id; Version = $Version}
         }
     }
+
+    [hashtable] GetScripts () {
+        $ScriptContentLines = $this.Output.Message -match '^Contents of ''\w:\\.+\\lib\\.+\\chocolatey(Install|BeforeModify|Uninstall)\.ps1'':$'
+        if (-not $ScriptContentLines) {
+            Write-Debug "No Scripts found on Call stamped at $($this.StartTime)"
+            return $null
+        }
+
+        $OutputHashtable = @{}
+
+        foreach ($ScriptLine in $ScriptContentLines) {
+            $ScriptName = Split-Path $ScriptLine -Leaf | ForEach-Object TrimEnd ":'"
+            $Index = $this.Output.Message.IndexOf($ScriptLine)
+            $OutputHashtable[$ScriptName] = [scriptBlock]::Create($this.Output.Message[$Index + 1])
+        }
+
+        return $OutputHashtable
+    }
 }
