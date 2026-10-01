@@ -92,9 +92,29 @@ class ChocolateyCall {
 
             $this.configValues = $Configuration
         } else {
-            Write-Debug "No Configuration Found on Log Stamped at $($this.StartTime)"
+            Write-Debug "No Configuration found on Call stamped at $($this.StartTime)"
         }
 
         return $this.configValues
+    }
+
+    [PSCustomObject[]] GetPackages () {
+        if ($this.GetConfiguration().CommandName -notin @(
+            'install', 'upgrade', 'list', 'uninstall'
+        ) -or -not $this.Output.Message -eq '--- Start of List ---') {
+            Write-Debug "No Packages found on Call stamped at $($this.StartTime)"
+            return @()
+        }
+
+        $StartOfListing = $this.Output.Message.IndexOf("--- Start of List ---") + 1
+        $EndOfListing = $this.Output.Message.IndexOf("--- End of List ---") - 1
+
+        Write-Debug "Converting lines $StartOfListing -> $EndOfListing to Packages"
+        return $this.Output.Message[$StartOfListing..$EndOfListing].Where{
+            $_ -match '^(?<PackageId>[\w\.-]+)\s+(?<Version>\d+(\.\d+){0,3})'
+        }.ForEach{
+            $Id, $Version, $Status = $_ -split ' '
+            [PSCustomObject]@{Id = $Id; Version = $Version}
+        }
     }
 }
