@@ -63,11 +63,11 @@ function Get-ChocolateyCall {
                     $null = $Call.GetConfiguration()
                 } catch {
                     <# Likely malformed call, e.g. early termination #>
-                    $Call.Command = "NOT CAPTURED (Possible early termination)"
                 }
+                $Call.Command = "NOT CAPTURED (Possible early termination)"
 
-                if ($Call.configValues) {
-                    $Call.Command = "choco $($Call.configValues.CommandName) $($Call.configValues.Input) [PARAMETERS NOT LOGGED]"
+                if ($Call.configValues.Input) {
+                    $Call.Command = "choco $($Call.configValues.CommandName) $($Call.configValues.Input)"
                 }
             } elseif ($Call.Command -eq '' -and $Call.Output[-2].Message -as [Version]) {
                 $Call.Command = "choco --version"
