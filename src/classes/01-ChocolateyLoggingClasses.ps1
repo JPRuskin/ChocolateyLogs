@@ -99,15 +99,15 @@ class ChocolateyCall {
     }
 
     [PSCustomObject[]] GetPackages () {
-        if ($this.GetConfiguration().CommandName -notin @(
-            'install', 'upgrade', 'list', 'uninstall'
-        ) -or -not $this.Output.Message -eq '--- Start of List ---') {
-            Write-Debug "No Packages found on Call stamped at $($this.StartTime)"
-            return @()
-        }
+        $ScriptContentLines = $this.Output.Message -match '^Resolving resource PackageSearchResource for source \w:\\.+\\lib$'
 
-        $StartOfListing = $this.Output.Message.IndexOf("--- Start of List ---") + 1
-        $EndOfListing = $this.Output.Message.IndexOf("--- End of List ---") - 1
+        $StartOfListing = $this.Output.Message.IndexOf($ScriptContentLines) + 1
+        $EndOfListing = $this.Output.Message.IndexOf('Performing validation checks.') - 1
+
+        if ($StartOfListing -eq -1 -or $EndOfListing -eq -1) {
+            Write-Debug "No Packages found on Call stamped at $($this.StartTime)"
+            return $null
+        }
 
         Write-Debug "Converting lines $StartOfListing -> $EndOfListing to Packages"
         return $this.Output.Message[$StartOfListing..$EndOfListing].Where{
